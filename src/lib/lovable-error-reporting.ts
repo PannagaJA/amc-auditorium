@@ -24,30 +24,8 @@ declare global {
   }
 }
 
-export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
-  if (typeof window === "undefined") return;
-  window.__lovableEvents?.captureException?.(
-    error,
-    {
-      source: "react_error_boundary",
-      route: window.location.pathname,
-      ...context,
-    },
-    {
-      mechanism: "react_error_boundary",
-      handled: false,
-      severity: "error",
-    },
-  );
-  // Prod React does not rethrow boundary-caught errors to window.onerror, so the
-  // editor's telemetry never sees them. Forward to lovable.js's reporting hook,
-  // which is present only inside the editor preview.
-  const stack = error instanceof Error ? error.stack : undefined;
-  window.__lovableReportRuntimeError?.({
-    message: describeThrown(error),
-    ...(stack !== undefined && { stack }),
-    filename: window.location.pathname,
-  });
+export function reportLovableError(_error: unknown, _context: Record<string, unknown> = {}) {
+  // Telemetry disabled - standalone institutional portal
 }
 
 const MAX_SERIALIZED_LENGTH = 2000;
