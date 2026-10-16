@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/book")({
-  validateSearch: (s: Record<string, unknown>) => ({ venue: typeof s.venue === "string" ? s.venue : undefined }),
+  validateSearch: (s: Record<string, unknown>): { venue?: string } => ({ venue: typeof s["venue"] === "string" ? (s["venue"] as string) : undefined }),
   head: () => ({ meta: [{ title: "New booking — Auditorium Booking" }, { name: "description", content: "Request an auditorium for your event." }, { property: "og:title", content: "New booking — Auditorium Booking" }, { property: "og:description", content: "Request an auditorium for your event." }] }),
   component: Book,
 });

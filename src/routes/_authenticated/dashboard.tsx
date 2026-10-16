@@ -31,7 +31,7 @@ function Dashboard() {
   return (
     <div>
       <PageHeader title={`Welcome, ${me.profile.full_name || "there"}`} desc="Here's what's coming up.">
-        <Button asChild><Link to="/book">New booking</Link></Button>
+        <Button asChild><Link to="/book" search={{}}>New booking</Link></Button>
       </PageHeader>
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="My upcoming bookings" value={d?.mine.length ?? "–"} />
