@@ -43,6 +43,22 @@ function isValidUuid(id: string | null | undefined): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
 
+function hasValidServiceKey(): boolean {
+  const key =
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"];
+  if (!key) return false;
+  const trimmed = key.trim();
+  if (
+    trimmed === "" ||
+    trimmed.includes("your_service_role") ||
+    trimmed.includes("placeholder") ||
+    trimmed.includes("secret_key_here")
+  ) {
+    return false;
+  }
+  return true;
+}
+
 async function assertAdmin(
   supabase: {
     rpc: (
@@ -68,16 +84,14 @@ const createUserSchema = z.object({
 
 export const createUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createUserSchema.parse(d))
+  .validator((d: unknown) => createUserSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const appRole = mapToAppRole(data.role);
 
     let validDeptUuid = isValidUuid(data.department_id) ? data.department_id : null;
 
-    const hasServiceKey = Boolean(
-      process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"],
-    );
+    const hasServiceKey = hasValidServiceKey();
 
     if (!hasServiceKey) {
       const localId = crypto.randomUUID();
@@ -169,7 +183,7 @@ const updateUserSchema = z.object({
 
 export const updateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => updateUserSchema.parse(d))
+  .validator((d: unknown) => updateUserSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const appRole = mapToAppRole(data.role);
@@ -179,9 +193,7 @@ export const updateUser = createServerFn({ method: "POST" })
     }
 
     let validDeptUuid = isValidUuid(data.department_id) ? data.department_id : null;
-    const hasServiceKey = Boolean(
-      process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"],
-    );
+    const hasServiceKey = hasValidServiceKey();
 
     if (!hasServiceKey) {
       try {
@@ -286,9 +298,7 @@ export const updateUser = createServerFn({ method: "POST" })
   });
 
 export const hasAdmin = createServerFn({ method: "GET" }).handler(async () => {
-  const hasServiceKey = Boolean(
-    process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"],
-  );
+  const hasServiceKey = hasValidServiceKey();
   if (!hasServiceKey) return { hasAdmin: true };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { count } = await supabaseAdmin
@@ -306,7 +316,7 @@ const setupSchema = z.object({
 
 /** One-time bootstrap: only works while no admin exists. */
 export const setupFirstAdmin = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => setupSchema.parse(d))
+  .validator((d: unknown) => setupSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { count } = await supabaseAdmin
@@ -338,16 +348,14 @@ export const setupFirstAdmin = createServerFn({ method: "POST" })
 
 export const deleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     if (data.id === context.userId) {
       throw new Error("You cannot delete your own logged-in administrator account.");
     }
 
-    const hasServiceKey = Boolean(
-      process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"],
-    );
+    const hasServiceKey = hasValidServiceKey();
 
     if (!hasServiceKey) {
       try {
@@ -399,7 +407,7 @@ export const deleteUser = createServerFn({ method: "POST" })
 
 export const deleteVenue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const client = context.supabase;
@@ -453,7 +461,7 @@ const createBookingSchema = z.object({
 
 export const createBookingAtomic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createBookingSchema.parse(d))
+  .validator((d: unknown) => createBookingSchema.parse(d))
   .handler(async ({ data, context }) => {
     const client = context.supabase;
 
@@ -548,7 +556,7 @@ const editBookingSchema = z.object({
 
 export const editBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => editBookingSchema.parse(d))
+  .validator((d: unknown) => editBookingSchema.parse(d))
   .handler(async ({ data, context }) => {
     const client = context.supabase;
 
@@ -637,7 +645,7 @@ export const editBooking = createServerFn({ method: "POST" })
 
 export const deleteBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const client = context.supabase;
 

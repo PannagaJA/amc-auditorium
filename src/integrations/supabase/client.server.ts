@@ -34,9 +34,20 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
+  let rawServiceKey =
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"];
+
+  if (
+    rawServiceKey &&
+    (rawServiceKey.includes("your_service_role") ||
+      rawServiceKey.includes("secret_key_here") ||
+      rawServiceKey.includes("placeholder"))
+  ) {
+    rawServiceKey = undefined;
+  }
+
   const SUPABASE_SERVICE_ROLE_KEY =
-    process.env["SUPABASE_SERVICE_ROLE_KEY"] ||
-    process.env["VITE_SUPABASE_SERVICE_ROLE_KEY"] ||
+    rawServiceKey ||
     process.env["SUPABASE_PUBLISHABLE_KEY"] ||
     process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
 
