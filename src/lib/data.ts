@@ -362,10 +362,56 @@ export const meQuery = queryOptions({
     const user = u.user;
     if (!user) return null;
     const [p, r] = await Promise.all([
-      supabase.from("profiles").select("*, departments(name)").eq("id", user.id).single(),
+      supabase.from("profiles").select("*, departments(name)").eq("id", user.id).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", user.id),
     ]);
-    if (p.error) throw p.error;
+
+    let profileData = p.data;
+
+    // Self-healing: if the user authenticated but has no profile row yet, create it automatically
+    if (!profileData) {
+      try {
+        const metaFullName =
+          (user.user_metadata?.full_name as string) || user.email?.split("@")[0] || "User";
+        const metaPhone = (user.user_metadata?.phone as string) || null;
+        const metaDeptId = (user.user_metadata?.department_id as string) || null;
+
+        const { data: upserted } = await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            email: user.email ?? "",
+            full_name: metaFullName,
+            phone: metaPhone,
+            department_id: metaDeptId && metaDeptId.length === 36 ? metaDeptId : null,
+            is_active: true,
+          })
+          .select("*, departments(name)")
+          .maybeSingle();
+
+        if (upserted) {
+          profileData = upserted;
+        }
+      } catch (upsertErr) {
+        console.warn("[meQuery] Could not auto-create profile row:", upsertErr);
+      }
+    }
+
+    // Ultimate fallback object if table is completely missing or blocked
+    if (!profileData) {
+      profileData = {
+        id: user.id,
+        email: user.email ?? "",
+        full_name: (user.user_metadata?.full_name as string) || user.email?.split("@")[0] || "User",
+        phone: (user.user_metadata?.phone as string) || null,
+        department_id: null,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        departments: null,
+      } as unknown as Me["profile"];
+    }
+
     const roles = (r.data ?? []).map((x) => x.role);
     const role: Role | null = roles.includes("admin")
       ? "admin"
@@ -382,12 +428,12 @@ export const meQuery = queryOptions({
     return {
       id: user.id,
       email: user.email ?? "",
-      profile: p.data as Me["profile"],
+      profile: profileData as Me["profile"],
       roles,
       role,
       collegeRole: metaRole,
       departmentName:
-        (p.data as { departments?: { name?: string } | null })?.departments?.name ||
+        (profileData as { departments?: { name?: string } | null })?.departments?.name ||
         metaDept ||
         "General Administration",
       isAdmin: role === "admin",

@@ -104,10 +104,7 @@ function SettingsPage() {
           <CardDescription className="text-xs">
             Assigned role: <strong>{roleDisplay}</strong> | Department:{" "}
             <strong>
-              {me.profile.departments?.name ??
-                (me.departmentName && me.departmentName !== "General Administration"
-                  ? me.departmentName
-                  : "None / Central Administration")}
+              {me.profile.departments?.name || me.departmentName || "General Administration"}
             </strong>
           </CardDescription>
         </CardHeader>

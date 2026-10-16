@@ -295,10 +295,7 @@ function UsersPage() {
                   ROLE_LABEL[u.collegeRole] ||
                   (u.role ? ROLE_LABEL[u.role] : "Department Staff / Faculty");
                 const deptText =
-                  u.departments?.name ||
-                  (u.department_name && u.department_name !== "General Administration"
-                    ? u.department_name
-                    : "—");
+                  u.departments?.name || u.department_name || "General Administration";
 
                 return (
                   <TableRow key={u.id} className="text-xs">
@@ -446,11 +443,14 @@ function UserDialog({ user, onClose }: { user: UserRow | null; onClose: () => vo
       if (match) return match.id;
     }
     const deptName = user?.departments?.name || user?.department_name;
-    if (deptName && deptName !== "General Administration") {
+    if (deptName) {
       const match = departments.find((d) => d.name.toLowerCase() === deptName.toLowerCase());
       if (match) return match.id;
     }
-    return "none";
+    const genAdmin = departments.find((d) =>
+      d.name.toLowerCase().includes("general administration"),
+    );
+    return genAdmin ? genAdmin.id : departments[0]?.id || "";
   }, [user, departments]);
 
   const [f, setF] = useState({
@@ -466,7 +466,6 @@ function UserDialog({ user, onClose }: { user: UserRow | null; onClose: () => vo
 
   // Find department name corresponding to selection
   const selectedDeptName = useMemo(() => {
-    if (f.department_id === "none") return "General Administration";
     const found = departments.find((d) => d.id === f.department_id);
     return found ? found.name : "General Administration";
   }, [f.department_id, departments]);
@@ -675,7 +674,6 @@ function UserDialog({ user, onClose }: { user: UserRow | null; onClose: () => vo
                 <SelectValue placeholder="Select department..." />
               </SelectTrigger>
               <SelectContent className="max-h-56">
-                <SelectItem value="none">Central Administration / None</SelectItem>
                 {departments.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.name}

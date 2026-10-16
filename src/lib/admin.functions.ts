@@ -156,6 +156,15 @@ export const createUser = createServerFn({ method: "POST" })
     });
     if (error || !created.user) throw new Error(error?.message ?? "Could not create user");
 
+    await supabaseAdmin.from("profiles").upsert({
+      id: created.user.id,
+      email: data.email,
+      full_name: data.full_name,
+      phone: data.phone || null,
+      department_id: validDeptUuid,
+      is_active: true,
+    });
+
     const { error: rErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: created.user.id, role: appRole });
@@ -332,6 +341,13 @@ export const setupFirstAdmin = createServerFn({ method: "POST" })
       user_metadata: { full_name: data.full_name, college_role: "admin" },
     });
     if (error || !created.user) throw new Error(error?.message ?? "Could not create admin");
+
+    await supabaseAdmin.from("profiles").upsert({
+      id: created.user.id,
+      email: data.email,
+      full_name: data.full_name,
+      is_active: true,
+    });
 
     await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
 

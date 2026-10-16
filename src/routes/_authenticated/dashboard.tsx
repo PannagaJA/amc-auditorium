@@ -156,8 +156,7 @@ function DashboardPage() {
       <PageHeader
         title={`Welcome, ${me.profile.full_name || "Colleague"}`}
         desc={`AMC Engineering College — Auditorium Management (${ROLE_LABEL[me.collegeRole] || me.collegeRole || "Faculty / Staff"}${
-          me.profile.departments?.name ||
-          (me.departmentName && me.departmentName !== "General Administration")
+          me.profile.departments?.name || me.departmentName
             ? ` • ${me.profile.departments?.name || me.departmentName}`
             : ""
         })`}
@@ -319,58 +318,71 @@ function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {venues.map((v) => {
-            const avail = getVenueCurrentStatus(v);
-            return (
-              <Card
-                key={v.id}
-                className="border border-border shadow-xs hover:border-slate-300 transition-colors"
-              >
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base font-semibold text-foreground truncate">
-                      {v.name}
-                    </CardTitle>
-                    <Badge
-                      variant="outline"
-                      className={`text-[11px] font-medium shrink-0 ${
-                        avail.status === "available"
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                          : avail.status === "occupied"
-                            ? "bg-amber-50 text-amber-800 border-amber-300"
-                            : "bg-slate-100 text-slate-700 border-slate-300"
-                      }`}
-                    >
-                      {avail.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-1 space-y-2.5 text-xs text-muted-foreground">
-                  <div className="flex items-center justify-between">
-                    <span>
-                      Capacity: <strong className="text-foreground">{v.capacity} seats</strong>
-                    </span>
-                    <span>
-                      Hours: {fmtHM(v.open_time)} – {fmtHM(v.close_time)}
-                    </span>
-                  </div>
-                  {v.location && <div className="truncate">Location: {v.location}</div>}
-                  <div className="flex items-center justify-between pt-1 border-t">
-                    <span className="text-[11px] text-slate-500">30-min buffer enforced</span>
-                    {v.status === "active" && (
-                      <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2.5">
-                        <Link to="/book" search={{ venue: v.id }}>
-                          Book Slot
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        {venues.length === 0 ? (
+          <Empty
+            text="No auditoriums configured yet."
+            action={
+              me.isAdmin ? (
+                <Button asChild size="sm" className="bg-[#151b54] text-white">
+                  <Link to="/venues">Add Auditorium</Link>
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {venues.map((v) => {
+              const avail = getVenueCurrentStatus(v);
+              return (
+                <Card
+                  key={v.id}
+                  className="border border-border shadow-xs hover:border-slate-300 transition-colors"
+                >
+                  <CardHeader className="p-4 pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-base font-semibold text-foreground truncate">
+                        {v.name}
+                      </CardTitle>
+                      <Badge
+                        variant="outline"
+                        className={`text-[11px] font-medium shrink-0 ${
+                          avail.status === "available"
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                            : avail.status === "occupied"
+                              ? "bg-amber-50 text-amber-800 border-amber-300"
+                              : "bg-slate-100 text-slate-700 border-slate-300"
+                        }`}
+                      >
+                        {avail.label}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-1 space-y-2.5 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <span>
+                        Capacity: <strong className="text-foreground">{v.capacity} seats</strong>
+                      </span>
+                      <span>
+                        Hours: {fmtHM(v.open_time)} – {fmtHM(v.close_time)}
+                      </span>
+                    </div>
+                    {v.location && <div className="truncate">Location: {v.location}</div>}
+                    <div className="flex items-center justify-between pt-1 border-t">
+                      <span className="text-[11px] text-slate-500">30-min buffer enforced</span>
+                      {v.status === "active" && (
+                        <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2.5">
+                          <Link to="/book" search={{ venue: v.id }}>
+                            Book Slot
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Staff: My Upcoming Bookings & History */}
