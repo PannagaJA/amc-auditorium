@@ -96,9 +96,9 @@ function AuthPage() {
         <div className="text-center space-y-2">
           <div className="inline-block rounded-md bg-white p-3 border border-slate-200 shadow-xs">
             <img
-              src="/amc-logo.png"
-              alt="AMC Engineering College"
-              className="mx-auto h-16 w-auto object-contain"
+              src="/logofinal.jpg"
+              alt="AMC Institutions"
+              className="mx-auto h-16 w-auto object-contain rounded-xs"
             />
           </div>
           <h1 className="text-xl font-bold tracking-tight text-[#151b54]">

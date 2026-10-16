@@ -121,9 +121,9 @@ function Shell() {
           <div className="flex items-center justify-between border-b border-border p-4 bg-white">
             <Link to="/dashboard" className="flex items-center gap-3">
               <img
-                src="/amc-logo.png"
-                alt="AMC College Logo"
-                className="h-10 w-auto object-contain"
+                src="/logofinal.jpg"
+                alt="AMC Institutions"
+                className="h-10 w-auto object-contain rounded-xs"
               />
               <div>
                 <span className="font-bold text-sm tracking-tight text-[#151b54] block leading-tight">
@@ -233,7 +233,11 @@ function Shell() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <img src="/amc-logo.png" alt="AMC" className="h-7 w-auto" />
+            <img
+              src="/logofinal.jpg"
+              alt="AMC Institutions"
+              className="h-7 w-auto object-contain rounded-xs"
+            />
             <span className="font-semibold text-sm text-[#151b54]">Auditorium Portal</span>
           </div>
 

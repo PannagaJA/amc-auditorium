@@ -35,9 +35,9 @@ function IndexPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
           <div className="flex items-center gap-4">
             <img
-              src="/amc-logo.png"
-              alt="AMC Engineering College"
-              className="h-12 w-auto object-contain"
+              src="/logofinal.jpg"
+              alt="AMC Institutions"
+              className="h-12 w-auto object-contain rounded-xs"
             />
             <div className="hidden sm:block border-l border-slate-300 pl-4">
               <span className="text-base font-bold text-[#151b54] block leading-tight">
